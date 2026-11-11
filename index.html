@@ -728,5 +728,202 @@
       buildSwatches();
       setMode(mode);
     </script>
+    <style>
+      .ai {
+        width: 100%;
+        margin-top: 6px;
+      }
+      .aimsg {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .aimsg:empty {
+        display: none;
+      }
+
+      /* Modern: colour band header, tinted section bars */
+      #paper.t-modern .head {
+        background: var(--doc);
+        border-bottom: 0;
+        border-radius: 6px;
+        padding: 18px 20px;
+        margin-bottom: 10px;
+      }
+      #paper.t-modern h3,
+      #paper.t-modern .contact {
+        color: #fff;
+      }
+      #paper.t-modern .head img {
+        border-color: rgba(255, 255, 255, 0.6);
+      }
+      #paper.t-modern h4 {
+        border-bottom: 0;
+        background: #eef1f5;
+        border-left: 4px solid var(--doc);
+        padding: 4px 8px;
+      }
+
+      /* Compact: smaller type, tighter spacing, fits one page */
+      #paper.t-compact {
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      #paper.t-compact h3 {
+        font-size: 22px;
+      }
+      #paper.t-compact .head {
+        padding-bottom: 8px;
+        margin-bottom: 4px;
+        border-bottom-width: 2px;
+      }
+      #paper.t-compact .head img {
+        width: 70px;
+        height: 86px;
+      }
+      #paper.t-compact h4 {
+        margin: 10px 0 4px;
+        font-size: 11.5px;
+      }
+      #paper.t-compact td {
+        padding: 3px 6px;
+      }
+    </style>
+    <script>
+      (function () {
+        const TPLS = {
+          classic: "Classic",
+          modern: "Modern",
+          compact: "Compact",
+        };
+        let tpl = "classic";
+        try {
+          tpl = localStorage.getItem("bio-resume-tpl") || "classic";
+        } catch (e) {}
+        if (!TPLS[tpl]) tpl = "classic";
+
+        // Template picker (above the Colour section)
+        $("swatches").previousElementSibling.insertAdjacentHTML(
+          "beforebegin",
+          '<h2>Template</h2><select id="tpl">' +
+            Object.keys(TPLS)
+              .map((k) => `<option value="${k}">${TPLS[k]}</option>`)
+              .join("") +
+            "</select>",
+        );
+        $("tpl").value = tpl;
+
+        const baseRender = render;
+        render = function () {
+          baseRender();
+          $("paper").className = "t-" + tpl;
+        };
+        $("tpl").onchange = (e) => {
+          tpl = e.target.value;
+          try {
+            localStorage.setItem("bio-resume-tpl", tpl);
+          } catch (err) {}
+          render();
+        };
+
+        // AI buttons
+        function addBtn(afterId, id, label) {
+          $(afterId).insertAdjacentHTML(
+            "afterend",
+            `<button type="button" class="btn small ai" id="${id}">${label}</button><div class="aimsg" id="${id}Msg"></div>`,
+          );
+        }
+        addBtn("summary", "aiSummary", "AI se objective likho");
+        addBtn("experience", "aiExp", "AI se experience improve karo");
+        $("skills").insertAdjacentHTML(
+          "afterend",
+          '<input id="role" placeholder="Job role, jaise Web Developer" style="margin-top:6px">',
+        );
+        addBtn("role", "aiSkills", "AI se skills suggest karo");
+
+        async function ai(task, data, id) {
+          const btn = $(id),
+            msg = $(id + "Msg"),
+            old = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = "Soch raha hai...";
+          msg.textContent = "";
+          try {
+            const r = await fetch("/api/ai", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ task, data }),
+            });
+            let j;
+            try {
+              j = await r.json();
+            } catch (e) {
+              throw new Error(
+                "AI server chalu nahi hai. Terminal mein 'node server.js' chalao.",
+              );
+            }
+            if (!r.ok) throw new Error(j.error || "AI error");
+            return j.text;
+          } catch (e) {
+            msg.textContent = e.message;
+            return null;
+          } finally {
+            btn.disabled = false;
+            btn.textContent = old;
+          }
+        }
+        function touch() {
+          isSample = false;
+          $("sampleNote").hidden = true;
+          update();
+        }
+
+        $("aiSummary").onclick = async () => {
+          const t = await ai(
+            "summary",
+            {
+              name: v("name"),
+              role: v("role"),
+              education: v("education"),
+              experience: v("experience"),
+              skills: v("skills"),
+            },
+            "aiSummary",
+          );
+          if (t) {
+            $("summary").value = t;
+            touch();
+          }
+        };
+        $("aiExp").onclick = async () => {
+          if (!v("experience").trim()) {
+            $("aiExpMsg").textContent = "Pehle experience ki lines likho.";
+            return;
+          }
+          const t = await ai("experience", { text: v("experience") }, "aiExp");
+          if (t) {
+            $("experience").value = t;
+            touch();
+          }
+        };
+        $("aiSkills").onclick = async () => {
+          if (!v("role").trim()) {
+            $("aiSkillsMsg").textContent = "Pehle job role likho.";
+            return;
+          }
+          const t = await ai(
+            "skills",
+            { role: v("role"), current: v("skills") },
+            "aiSkills",
+          );
+          if (t) {
+            $("skills").value = t;
+            touch();
+          }
+        };
+
+        render();
+      })();
+    </script>
   </body>
 </html>
