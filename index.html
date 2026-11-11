@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Biodata Resume Maker</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #f1f3f6;
+        --surface: #fff;
+        --field: #f6f8fa;
+        --fg: #14181f;
+        --muted: #5b6572;
+        --line: #dde2e8;
+        --accent: #0b6e8a;
+        --accent-fg: #fff;
+        --display: "Space Grotesk", "Inter", system-ui, sans-serif;
+        --text: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --doc: #1f4e79;
+        --paper: #fff;
+        --paper-ink: #1a1d23;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1318;
+          --surface: #181d24;
+          --field: #0f1318;
+          --fg: #e8ecf1;
+          --muted: #98a3b0;
+          --line: #2a323c;
+          --accent: #4fb3d1;
+          --accent-fg: #06222c;
+          color-scheme: dark;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font: 15px/1.45 var(--text);
+        padding: 0 16px 32px;
+      }
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 9;
+        background: var(--bg);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 0;
+        max-width: 1180px;
+        margin: 0 auto;
+      }
+      h1 {
+        font: 700 20px/1.1 var(--display);
+        margin: 0;
+      }
+      .seg {
+        display: inline-flex;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 3px;
+        gap: 2px;
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font: 600 13px var(--text);
+        padding: 7px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .seg button[aria-pressed="true"] {
+        background: var(--accent);
+        color: var(--accent-fg);
+      }
+      .app {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
+        gap: 20px;
+        align-items: start;
+      }
+      .view-switch {
+        display: none;
+        max-width: 1180px;
+        margin: 0 auto 12px;
+      }
+      .view-switch .seg {
+        width: 100%;
+      }
+      .view-switch .seg button {
+        flex: 1;
+      }
+      .form {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 16px;
+        min-width: 0;
+      }
+      .note {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--field);
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .note[hidden],
+      [hidden] {
+        display: none !important;
+      }
+      h2 {
+        font: 700 12px var(--display);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+        margin: 18px 0 2px;
+      }
+      label {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--muted);
+        margin: 10px 0 4px;
+      }
+      .hint {
+        font-weight: 400;
+        opacity: 0.85;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        background: var(--field);
+        color: var(--fg);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 10px;
+        font: 400 15px var(--text);
+      }
+      textarea {
+        min-height: 76px;
+        resize: vertical;
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .two > div {
+        min-width: 0;
+      }
+      .swatches {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .sw {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 2px solid var(--surface);
+        box-shadow: 0 0 0 1px var(--line);
+        cursor: pointer;
+        padding: 0;
+      }
+      .sw[aria-pressed="true"] {
+        box-shadow: 0 0 0 2px var(--fg);
+      }
+      .btn {
+        border: 1px solid var(--line);
+        background: var(--field);
+        color: var(--fg);
+        font: 600 13px var(--text);
+        padding: 9px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .btn.small {
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+      .btn.primary {
+        background: var(--accent);
+        color: var(--accent-fg);
+        border-color: var(--accent);
+      }
+      .actions {
+        max-width: 794px;
+        margin: 14px auto 0;
+        display: flex;
+        gap: 10px;
+      }
+      .actions .btn {
+        flex: 1;
+        padding: 12px;
+        font-size: 14px;
+      }
+      #fallback {
+        margin-top: 10px;
+        min-height: 110px;
+      }
+      .sheet-wrap {
+        min-width: 0;
+      }
+      #paper {
+        background: var(--paper);
+        color: var(--paper-ink);
+        max-width: 794px;
+        min-height: 520px;
+        margin: 0 auto;
+        padding: clamp(18px, 4vw, 38px);
+        font-size: 13px;
+        line-height: 1.55;
+        border-radius: 4px;
+        box-shadow: 0 2px 14px rgba(0, 0, 0, 0.18);
+        overflow-wrap: anywhere;
+      }
+      #paper .head {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        border-bottom: 3px solid var(--doc);
+        padding-bottom: 12px;
+        margin-bottom: 8px;
+      }
+      #paper .head img {
+        width: 88px;
+        height: 108px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #ccd;
+        flex: none;
+      }
+      #paper h3 {
+        font: 700 26px/1.1 var(--display);
+        color: var(--doc);
+        margin: 0;
+      }
+      #paper .contact {
+        color: #444b57;
+        font-size: 12px;
+        margin-top: 6px;
+      }
+      #paper h4 {
+        font: 700 12.5px var(--display);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--doc);
+        border-bottom: 1px solid #d5d9e0;
+        padding-bottom: 3px;
+        margin: 16px 0 6px;
+      }
+      #paper ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+      #paper li {
+        margin-bottom: 3px;
+      }
+      #paper table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #paper td {
+        padding: 5px 6px;
+        border-bottom: 1px solid #eceef2;
+        vertical-align: top;
+      }
+      #paper td:first-child {
+        width: 36%;
+        font-weight: 600;
+      }
+      .chip {
+        display: inline-block;
+        background: #eef1f5;
+        color: var(--doc);
+        padding: 2px 10px;
+        border-radius: 12px;
+        margin: 2px 4px 2px 0;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .empty {
+        color: #8a92a0;
+        font-style: italic;
+      }
+      @media (max-width: 899px) {
+        .app {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .view-switch {
+          display: block;
+        }
+        .app[data-view="edit"] .sheet-wrap {
+          display: none;
+        }
+        .app[data-view="preview"] .form {
+          display: none;
+        }
+      }
+      @media print {
+        @page {
+          size: A4;
+          margin: 10mm;
+        }
+        body {
+          background: #fff;
+          padding: 0;
+        }
+        .top,
+        .view-switch,
+        .form,
+        .actions,
+        #fallback {
+          display: none !important;
+        }
+        .app {
+          display: block;
+        }
+        .app .sheet-wrap {
+          display: block !important;
+        }
+        #paper {
+          box-shadow: none;
+          padding: 0;
+          max-width: none;
+          min-height: 0;
+        }
+        * {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top">
+      <h1>Biodata Resume Maker</h1>
+      <div class="seg" role="group" aria-label="Document type">
+        <button id="mResume" aria-pressed="true">Resume</button>
+        <button id="mBiodata" aria-pressed="false">Biodata</button>
+      </div>
+    </div>
+
+    <div class="view-switch">
+      <div class="seg" role="group" aria-label="Screen">
+        <button id="vEdit" aria-pressed="true">Edit</button>
+        <button id="vPreview" aria-pressed="false">Preview</button>
+      </div>
+    </div>
+
+    <div class="app" id="app" data-view="edit">
+      <section class="form" aria-label="Details">
+        <div class="note" id="sampleNote">
+          <span>Ye example data hai. Clear karke apni details bharo.</span>
+          <button class="btn small" id="clearBtn">Clear</button>
+        </div>
+
+        <h2>Basic</h2>
+        <label for="name">Full name</label
+        ><input id="name" autocomplete="name" />
+        <div class="two">
+          <div>
+            <label for="phone">Phone</label><input id="phone" type="tel" />
+          </div>
+          <div>
+            <label for="email">Email</label><input id="email" type="email" />
+          </div>
+        </div>
+        <label for="city">City / Address</label><input id="city" />
+        <label for="photo">Photo <span class="hint">(optional)</span></label
+        ><input id="photo" type="file" accept="image/*" />
+
+        <div id="resumeFields">
+          <h2>Resume details</h2>
+          <label for="summary">Objective</label
+          ><textarea id="summary"></textarea>
+          <label for="education"
+            >Education <span class="hint">(ek line = ek entry)</span></label
+          ><textarea id="education"></textarea>
+          <label for="experience"
+            >Experience / Internships
+            <span class="hint">(ek line = ek entry)</span></label
+          ><textarea id="experience"></textarea>
+          <label for="skills"
+            >Skills <span class="hint">(comma se alag karo)</span></label
+          ><input id="skills" />
+          <label for="projects"
+            >Projects <span class="hint">(ek line = ek project)</span></label
+          ><textarea id="projects"></textarea>
+        </div>
+
+        <div id="biodataFields" hidden>
+          <h2>Biodata details</h2>
+          <div class="two">
+            <div>
+              <label for="dob">Date of birth</label
+              ><input id="dob" type="date" />
+            </div>
+            <div><label for="height">Height</label><input id="height" /></div>
+          </div>
+          <div class="two">
+            <div>
+              <label for="religion">Religion</label><input id="religion" />
+            </div>
+            <div>
+              <label for="marital">Marital status</label>
+              <select id="marital">
+                <option>Unmarried</option>
+                <option>Divorced</option>
+                <option>Widowed</option>
+              </select>
+            </div>
+          </div>
+          <label for="father">Father's name &amp; occupation</label
+          ><input id="father" />
+          <label for="mother">Mother's name &amp; occupation</label
+          ><input id="mother" /> <label for="siblings">Siblings</label
+          ><input id="siblings" /> <label for="bEducation">Education</label
+          ><input id="bEducation" />
+          <label for="bOccupation">Occupation / Income</label
+          ><input id="bOccupation" />
+          <label for="extra"
+            >Extra details
+            <span class="hint">(Label: value, ek line mein ek)</span></label
+          ><textarea id="extra"></textarea>
+        </div>
+
+        <h2>Colour</h2>
+        <div class="swatches" id="swatches"></div>
+      </section>
+
+      <section class="sheet-wrap" aria-label="Preview">
+        <div id="paper"></div>
+        <div class="actions">
+          <button class="btn primary" id="pdfBtn">Download PDF</button>
+          <button class="btn" id="copyBtn">Copy as text</button>
+        </div>
+        <textarea
+          id="fallback"
+          hidden
+          readonly
+          aria-label="Copy this text"
+        ></textarea>
+      </section>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const COLORS = ["#1f4e79", "#1b6e4a", "#6b3fa0", "#a83232", "#222a35"];
+      const FIELDS = [
+        "name",
+        "phone",
+        "email",
+        "city",
+        "summary",
+        "education",
+        "experience",
+        "skills",
+        "projects",
+        "dob",
+        "height",
+        "religion",
+        "marital",
+        "father",
+        "mother",
+        "siblings",
+        "bEducation",
+        "bOccupation",
+        "extra",
+      ];
+      const SAMPLE = {
+        name: "Rahul Sharma",
+        phone: "98765 43210",
+        email: "rahul.sharma@example.com",
+        city: "Lucknow, Uttar Pradesh",
+        summary:
+          "Final-year B.Tech student looking for a web developer internship where I can build useful products.",
+        education:
+          "B.Tech CSE, XYZ University, 2026, 8.2 CGPA\nClass XII, CBSE, 2022, 91%",
+        experience:
+          "Web Intern, ABC Pvt Ltd (Jun-Aug 2025): built four landing pages in HTML, CSS and JavaScript",
+        skills: "HTML, CSS, JavaScript, Python, Git",
+        projects:
+          "Biodata Resume Maker: form based resume and biodata generator",
+        dob: "2002-08-14",
+        height: "5'8\"",
+        religion: "Hindu",
+        marital: "Unmarried",
+        father: "Suresh Sharma (Businessman)",
+        mother: "Sunita Sharma (Homemaker)",
+        siblings: "1 younger sister",
+        bEducation: "B.Tech (Computer Science)",
+        bOccupation: "Software Developer, 6 LPA",
+        extra: "Gotra: Kashyap\nHobbies: Cricket, Reading",
+      };
+      let mode = "resume",
+        color = COLORS[0],
+        photoData = "",
+        isSample = true;
+
+      const esc = (s) =>
+        String(s == null ? "" : s).replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      const lines = (s) =>
+        String(s || "")
+          .split("\n")
+          .map((x) => x.trim())
+          .filter(Boolean);
+      const fmtDate = (d) => {
+        if (!d) return "";
+        const t = new Date(d);
+        return isNaN(t)
+          ? ""
+          : t.toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            });
+      };
+      const sec = (t, h) => (h ? `<h4>${t}</h4>${h}` : "");
+      const ul = (a) =>
+        a.length
+          ? "<ul>" + a.map((x) => `<li>${esc(x)}</li>`).join("") + "</ul>"
+          : "";
+      const v = (id) => $(id).value;
+
+      function render() {
+        document.documentElement.style.setProperty("--doc", color);
+        const contact = [v("phone"), v("email"), v("city")]
+          .filter(Boolean)
+          .map(esc)
+          .join(" &nbsp;|&nbsp; ");
+        let h = `<div class="head">${photoData ? `<img src="${photoData}" alt="Photo">` : ""}<div><h3>${esc(v("name")) || "Your Name"}</h3><div class="contact">${contact}</div></div></div>`;
+        if (mode === "resume") {
+          h += sec(
+            "Objective",
+            v("summary") ? `<div>${esc(v("summary"))}</div>` : "",
+          );
+          h += sec("Education", ul(lines(v("education"))));
+          h += sec("Experience", ul(lines(v("experience"))));
+          const sk = v("skills")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+          h += sec(
+            "Skills",
+            sk.map((s) => `<span class="chip">${esc(s)}</span>`).join(""),
+          );
+          h += sec("Projects", ul(lines(v("projects"))));
+        } else {
+          const rows = [
+            ["Date of Birth", fmtDate(v("dob"))],
+            ["Height", v("height")],
+            ["Religion", v("religion")],
+            ["Marital Status", v("marital")],
+            ["Education", v("bEducation")],
+            ["Occupation / Income", v("bOccupation")],
+            ["Father", v("father")],
+            ["Mother", v("mother")],
+            ["Siblings", v("siblings")],
+          ];
+          lines(v("extra")).forEach((l) => {
+            const i = l.indexOf(":");
+            rows.push(
+              i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l],
+            );
+          });
+          const body = rows
+            .filter((r) => r[1])
+            .map((r) => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`)
+            .join("");
+          h += sec("Personal Details", body ? `<table>${body}</table>` : "");
+        }
+        if (h.indexOf("<h4>") < 0)
+          h += `<p class="empty">Details bharte hi yahan dikhengi.</p>`;
+        $("paper").innerHTML = h;
+      }
+
+      function save() {
+        try {
+          const d = { mode, color, photoData, isSample };
+          FIELDS.forEach((f) => (d[f] = v(f)));
+          localStorage.setItem("bio-resume-v1", JSON.stringify(d));
+        } catch (e) {}
+      }
+      function fill(d) {
+        FIELDS.forEach((f) => {
+          $(f).value = d[f] != null ? d[f] : "";
+        });
+      }
+      function load() {
+        let d = null;
+        try {
+          d = JSON.parse(localStorage.getItem("bio-resume-v1") || "null");
+        } catch (e) {}
+        if (d) {
+          fill(d);
+          mode = d.mode || "resume";
+          color = d.color || COLORS[0];
+          photoData = d.photoData || "";
+          isSample = !!d.isSample;
+        } else fill(SAMPLE);
+        $("sampleNote").hidden = !isSample;
+      }
+      function update() {
+        render();
+        save();
+      }
+
+      function setMode(m) {
+        mode = m;
+        $("resumeFields").hidden = m !== "resume";
+        $("biodataFields").hidden = m !== "biodata";
+        $("mResume").setAttribute("aria-pressed", m === "resume");
+        $("mBiodata").setAttribute("aria-pressed", m === "biodata");
+        update();
+      }
+      function setView(x) {
+        $("app").dataset.view = x;
+        $("vEdit").setAttribute("aria-pressed", x === "edit");
+        $("vPreview").setAttribute("aria-pressed", x === "preview");
+        window.scrollTo(0, 0);
+      }
+      function buildSwatches() {
+        $("swatches").innerHTML = COLORS.map(
+          (c) =>
+            `<button class="sw" data-c="${c}" style="background:${c}" aria-label="Colour ${c}" aria-pressed="${c === color}"></button>`,
+        ).join("");
+        $("swatches")
+          .querySelectorAll(".sw")
+          .forEach(
+            (b) =>
+              (b.onclick = () => {
+                color = b.dataset.c;
+                buildSwatches();
+                update();
+              }),
+          );
+      }
+
+      $("photo").addEventListener("change", (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const img = new Image();
+        img.onload = () => {
+          const s = Math.min(1, 400 / Math.max(img.width, img.height)),
+            c = document.createElement("canvas");
+          c.width = Math.round(img.width * s);
+          c.height = Math.round(img.height * s);
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          photoData = c.toDataURL("image/jpeg", 0.8);
+          isSample = false;
+          $("sampleNote").hidden = true;
+          update();
+        };
+        img.src = URL.createObjectURL(f);
+      });
+
+      FIELDS.forEach((f) =>
+        $(f).addEventListener("input", () => {
+          if (isSample) {
+            isSample = false;
+            $("sampleNote").hidden = true;
+          }
+          update();
+        }),
+      );
+      $("mResume").onclick = () => setMode("resume");
+      $("mBiodata").onclick = () => setMode("biodata");
+      $("vEdit").onclick = () => setView("edit");
+      $("vPreview").onclick = () => setView("preview");
+      $("clearBtn").onclick = () => {
+        fill({ marital: "Unmarried" });
+        photoData = "";
+        isSample = false;
+        $("sampleNote").hidden = true;
+        update();
+      };
+      $("pdfBtn").onclick = () => window.print();
+
+      $("copyBtn").onclick = async () => {
+        const text = $("paper").innerText.trim(),
+          fb = $("fallback");
+        try {
+          await navigator.clipboard.writeText(text);
+          $("copyBtn").textContent = "Copied";
+          setTimeout(() => ($("copyBtn").textContent = "Copy as text"), 1800);
+          fb.hidden = true;
+        } catch (e) {
+          fb.hidden = false;
+          fb.value = text;
+          fb.focus();
+          fb.select();
+        }
+      };
+
+      load();
+      buildSwatches();
+      setMode(mode);
+    </script>
+  </body>
+</html>
